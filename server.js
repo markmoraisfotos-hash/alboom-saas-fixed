@@ -27,6 +27,21 @@ app.get('/health', (req, res) => {
     });
 });
 
+// Teste de variáveis - ADICIONE AQUI
+app.get('/test-vars', (req, res) => {
+    res.json({
+        message: 'Teste de variáveis de ambiente',
+        timestamp: new Date().toISOString(),
+        jwt_secret_exists: !!process.env.JWT_SECRET,
+        jwt_length: process.env.JWT_SECRET ? process.env.JWT_SECRET.length : 0,
+        total_env_vars: Object.keys(process.env).length,
+        server_info: {
+            source: 'GitHub Integration',
+            version: 'github-deploy-with-vars'
+        }
+    });
+});
+
 const server = app.listen(PORT, '0.0.0.0', () => {
     console.log('✅ GITHUB SERVER rodando na porta ' + PORT);
 });
