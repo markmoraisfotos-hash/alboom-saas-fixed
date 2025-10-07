@@ -1,0 +1,376 @@
+### PhotoFlow SaaS - Plataforma Completa para Fotógrafos
+### Teste de todas as funcionalidades: Galeria + Vendas + Marca d'água
+
+# ============= VARIÁVEIS =============
+@baseUrl = http://localhost:8080
+@adminToken = SEU_TOKEN_ADMIN_AQUI
+@photographerToken = SEU_TOKEN_FOTOGRAFO_AQUI
+@sessionCode = ABC123
+@orderId = 1
+
+# ============= 1. AUTENTICAÇÃO =============
+
+### Login Admin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "admin@alboom.com",
+    "password": "admin123"
+}
+
+### Cadastrar Fotógrafo
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+    "name": "Maria Fotógrafa",
+    "email": "maria@photoflow.com",
+    "password": "MinhaSenh@123"
+}
+
+### Login Fotógrafo
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+    "email": "maria@photoflow.com",
+    "password": "MinhaSenh@123"
+}
+
+# ============= 2. CONFIGURAR MARCA D'ÁGUA =============
+
+### Buscar configurações atuais
+GET {{baseUrl}}/api/watermark/settings
+Authorization: Bearer {{photographerToken}}
+
+### Configurar marca d'água
+PUT {{baseUrl}}/api/watermark/settings
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "enabled": true,
+    "type": "text",
+    "text": "© Maria Fotógrafa - PhotoFlow",
+    "position": "bottom-right",
+    "opacity": 0.8,
+    "size": "medium",
+    "color": "#FFFFFF",
+    "apply_to_previews": true,
+    "apply_to_downloads": false
+}
+
+### Ver prévia da marca d'água
+GET {{baseUrl}}/api/watermark/preview
+Authorization: Bearer {{photographerToken}}
+
+# ============= 3. CRIAR PACOTES DE VENDA =============
+
+### Criar pacote digital
+POST {{baseUrl}}/api/commerce/packages
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "name": "Pacote Digital Básico",
+    "description": "10 fotos editadas em alta resolução para download",
+    "type": "digital",
+    "price": 150.00,
+    "options": {
+        "photo_count": 10,
+        "resolution": "alta",
+        "formats": ["JPG", "PNG"]
+    }
+}
+
+### Criar pacote de impressão
+POST {{baseUrl}}/api/commerce/packages
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "name": "Álbum Premium",
+    "description": "Álbum físico 30x30cm com 20 páginas e estojo",
+    "type": "print",
+    "price": 450.00,
+    "options": {
+        "size": "30x30cm",
+        "pages": 20,
+        "cover": "capa dura",
+        "case": true
+    }
+}
+
+### Criar pacote de fotos extras
+POST {{baseUrl}}/api/commerce/packages
+Authorization: Bearer {{photographerToken}}  
+Content-Type: application/json
+
+{
+    "name": "Fotos Extras",
+    "description": "Fotos adicionais editadas individualmente",
+    "type": "extra_photo",
+    "price": 25.00,
+    "options": {
+        "per_photo": true,
+        "editing_included": true
+    }
+}
+
+### Listar todos os pacotes
+GET {{baseUrl}}/api/commerce/packages
+Authorization: Bearer {{photographerToken}}
+
+# ============= 4. CRIAR SESSÃO E UPLOAD =============
+
+### Criar sessão
+POST {{baseUrl}}/api/gallery/sessions
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "name": "Casamento João & Ana - Cerimônia",
+    "description": "Fotos da cerimônia religiosa e festa",
+    "client_name": "João Silva",
+    "client_email": "joao@email.com",
+    "session_date": "2024-12-25T16:00:00Z",
+    "max_album_selections": 50,
+    "max_editing_selections": 15
+}
+
+### Upload de fotos com marca d'água
+POST {{baseUrl}}/api/gallery/sessions/1/photos
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "photos": [
+        {
+            "filename": "CASAMENTO_001.jpg",
+            "original_filename": "DSC_0001.NEF",
+            "file_size": 3200000,
+            "dimensions": { "width": 2000, "height": 1333 },
+            "metadata": { "camera": "Canon R5", "lens": "24-70mm f/2.8" }
+        },
+        {
+            "filename": "CASAMENTO_002.jpg",
+            "original_filename": "DSC_0002.NEF", 
+            "file_size": 3456000,
+            "dimensions": { "width": 2000, "height": 1333 },
+            "metadata": { "camera": "Canon R5", "lens": "85mm f/1.4" }
+        },
+        {
+            "filename": "CASAMENTO_003.jpg",
+            "original_filename": "DSC_0003.NEF",
+            "file_size": 3100000,
+            "dimensions": { "width": 2000, "height": 1333 },
+            "metadata": { "camera": "Canon R5", "lens": "70-200mm f/2.8" }
+        }
+    ]
+}
+
+### Aplicar marca d'água em lote nas fotos
+POST {{baseUrl}}/api/watermark/batch/1
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "apply_to": "all",
+    "override_settings": {
+        "apply_to_previews": true
+    }
+}
+
+# ============= 5. CLIENTE ACESSA E SELECIONA =============
+
+### Cliente visualiza galeria
+GET {{baseUrl}}/api/gallery/session/{{sessionCode}}
+
+### Cliente visualiza pacotes disponíveis
+GET {{baseUrl}}/api/commerce/session/{{sessionCode}}/packages
+
+### Cliente seleciona fotos
+POST {{baseUrl}}/api/gallery/session/{{sessionCode}}/select
+Content-Type: application/json
+
+{
+    "photo_id": 1,
+    "selection_type": "album",
+    "selected": true,
+    "client_notes": "Foto perfeita para o álbum!"
+}
+
+POST {{baseUrl}}/api/gallery/session/{{sessionCode}}/select
+Content-Type: application/json
+
+{
+    "photo_id": 2,
+    "selection_type": "editing",
+    "selected": true,
+    "client_notes": "Pode clarear um pouco o fundo?"
+}
+
+POST {{baseUrl}}/api/gallery/session/{{sessionCode}}/select
+Content-Type: application/json
+
+{
+    "photo_id": 3,
+    "selection_type": "album",
+    "selected": true
+}
+
+### Cliente finaliza seleção
+POST {{baseUrl}}/api/client/{{sessionCode}}/finalize
+
+# ============= 6. CLIENTE CRIA PEDIDO =============
+
+### Cliente cria pedido com pacotes
+POST {{baseUrl}}/api/commerce/session/{{sessionCode}}/order
+Content-Type: application/json
+
+{
+    "order_type": "selection",
+    "delivery_method": "both",
+    "delivery_address": {
+        "street": "Rua das Flores, 123",
+        "city": "São Paulo",
+        "state": "SP",
+        "zip": "01234-567",
+        "country": "Brasil"
+    },
+    "items": [
+        {
+            "package_id": 1,
+            "quantity": 1,
+            "options": {
+                "selected_photos": [1, 3],
+                "format": "JPG"
+            }
+        },
+        {
+            "package_id": 2,
+            "quantity": 1,
+            "options": {
+                "layout": "clássico",
+                "cover_photo_id": 1
+            }
+        },
+        {
+            "package_id": 3,
+            "quantity": 2,
+            "options": {
+                "photo_ids": [2]
+            }
+        }
+    ],
+    "notes": "Gostaria de receber o álbum em até 15 dias"
+}
+
+### Cliente processa pagamento
+POST {{baseUrl}}/api/commerce/orders/{{orderId}}/payment
+Content-Type: application/json
+
+{
+    "method": "credit_card",
+    "gateway": "stripe"
+}
+
+# ============= 7. FOTÓGRAFO GERENCIA PEDIDOS =============
+
+### Dashboard comercial
+GET {{baseUrl}}/api/commerce/dashboard
+Authorization: Bearer {{photographerToken}}
+
+### Listar todos os pedidos
+GET {{baseUrl}}/api/commerce/orders
+Authorization: Bearer {{photographerToken}}
+
+### Filtrar pedidos por status
+GET {{baseUrl}}/api/commerce/orders?status=pending
+Authorization: Bearer {{photographerToken}}
+
+### Atualizar status do pedido para processando
+PUT {{baseUrl}}/api/commerce/orders/{{orderId}}/status
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "status": "processing"
+}
+
+### Aplicar marca d'água nas fotos selecionadas
+POST {{baseUrl}}/api/watermark/batch/1
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "apply_to": "selected",
+    "override_settings": {
+        "apply_to_downloads": true,
+        "opacity": 0.3
+    }
+}
+
+### Marcar pedido como completo
+PUT {{baseUrl}}/api/commerce/orders/{{orderId}}/status
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "status": "completed"
+}
+
+# ============= 8. RELATÓRIOS E FILTROS =============
+
+### Exportar filtros Lightroom das seleções
+GET {{baseUrl}}/api/gallery/sessions/1/export
+Authorization: Bearer {{photographerToken}}
+
+### Dashboard geral da galeria
+GET {{baseUrl}}/api/gallery/dashboard
+Authorization: Bearer {{photographerToken}}
+
+### Estatísticas da sessão
+GET {{baseUrl}}/api/gallery/sessions/1/stats
+Authorization: Bearer {{photographerToken}}
+
+# ============= 9. TESTES DE VALIDAÇÃO =============
+
+### Teste - aplicar marca d'água sem configuração
+POST {{baseUrl}}/api/watermark/apply/999
+Authorization: Bearer {{photographerToken}}
+Content-Type: application/json
+
+{
+    "force_apply": false
+}
+
+### Teste - criar pedido sem itens
+POST {{baseUrl}}/api/commerce/session/{{sessionCode}}/order
+Content-Type: application/json
+
+{
+    "order_type": "selection",
+    "items": []
+}
+
+### Teste - processar pagamento inexistente
+POST {{baseUrl}}/api/commerce/orders/999/payment
+Content-Type: application/json
+
+{
+    "method": "pix",
+    "gateway": "pagseguro"
+}
+
+# ============= 10. STATUS GERAL =============
+
+### Homepage com todas as funcionalidades
+GET {{baseUrl}}/
+
+### Health check completo
+GET {{baseUrl}}/health
+
+### Ping do sistema
+GET {{baseUrl}}/ping
