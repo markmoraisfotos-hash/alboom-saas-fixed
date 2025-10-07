@@ -5,6 +5,11 @@ const PORT = process.env.PORT || 8080;
 console.log('🚀 GITHUB VERSION - Cache definitivamente quebrado!');
 console.log('🔥 Timestamp GitHub:', Date.now());
 console.log('⚡ Deploy via GitHub Integration');
+console.log('🔐 JWT_SECRET exists:', !!process.env.JWT_SECRET);
+console.log('🔐 JWT_SECRET length:', process.env.JWT_SECRET?.length || 0);
+console.log('📊 Total ENV vars:', Object.keys(process.env).length);
+console.log('🔍 JWT related vars:', Object.keys(process.env).filter(k => k.includes('JWT')));
+
 
 app.get('/', (req, res) => {
     res.send('🎉 VERSÃO GITHUB FUNCIONANDO! Deploy: ' + new Date().toISOString());
