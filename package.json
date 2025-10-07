@@ -1,0 +1,15 @@
+{
+  "name": "alboom-saas-fixed",
+  "version": "1.0.0",
+  "description": "AlboomProof SaaS - Sistema de seleção de fotos",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": "18"
+  }
+}
