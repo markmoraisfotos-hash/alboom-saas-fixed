@@ -4,7 +4,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'sua_chave_secreta_super_segura_pho
 // Middleware de autenticação principal
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  const token = authHeader && authHeader.split(' ')[1];
   
   if (!token) {
     return res.status(401).json({
@@ -78,7 +78,7 @@ const requirePhotographer = (req, res, next) => {
   next();
 };
 
-// Middleware opcional - não falha se não houver token
+// Middleware opcional
 const optionalAuth = (req, res, next) => {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -94,7 +94,37 @@ const optionalAuth = (req, res, next) => {
   next();
 };
 
-// Middleware para verificar propriedade de recursos
-const requireOwnership = (resourceParam = 'id') => {
-  return (req, res, next) => {
-    if (!req.<span class="cursor">█</span>
+// Função utilitária para gerar tokens
+const generateToken = (user) => {
+  const payload = {
+    id: user.id,
+    email: user.email,
+    role: user.role,
+    name: user.name
+  };
+  
+  return jwt.sign(payload, JWT_SECRET, { 
+    expiresIn: '24h',
+    issuer: 'PhotoFlow SaaS',
+    audience: 'PhotoFlow Users'
+  });
+};
+
+// Função para verificar token sem middleware
+const verifyTokenSync = (token) => {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch (error) {
+    return null;
+  }
+};
+
+module.exports = {
+  authenticateToken,
+  requireAdmin,
+  requirePhotographer,
+  optionalAuth,
+  generateToken,
+  verifyTokenSync,
+  JWT_SECRET
+};
